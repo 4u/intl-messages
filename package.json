@@ -1,0 +1,16 @@
+{
+  "name": "intl-messages",
+  "description": "Small library to manage yahoo-intl messages without react",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/4u/intl-messages"
+  },
+  "license": "MIT",
+  "version": "0.1.0",
+  "dependencies": {
+    "intl-format-cache": "^2.0.5"
+  },
+  "peerDependencies": {
+    "intl-messageformat": "^1.3.0"
+  }
+}
