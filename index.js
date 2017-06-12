@@ -3,10 +3,26 @@ var MessageFormat = require('intl-messageformat');
 
 const getMessageFormat = memoizeFormatConstructor(MessageFormat);
 
+var defaultLocale = 'en';
 var globalLocale = '';
+var defaultMessages = {};
 var messages = {};
 
 module.exports.defineMessages = function(messages) {
+  Object.keys(messages).reduce(function(next, id) {
+    var message = messages[id];
+    if (!message || !message.id) {
+      throw new Error('Message has no id: ' + JSON.stringify(message));
+    }
+    if (message.defaultMessage === undefined) {
+      throw new Error('Default message is required: ' + JSON.stringify(message));
+    }
+    if (next[message.id] && process.env.NODE_ENV !== 'production') {
+      console.warn('Duplicate message with id `' + message.id + '`.');
+    }
+    next[message.id] = message.defaultMessage;
+    return next;
+  }, defaultMessages);
   return messages;
 };
 
@@ -20,6 +36,21 @@ module.exports.addMessages = function(locale, dict) {
   }, messages[locale] || {});
 };
 
+module.exports.getMessages = function(locale) {
+  if (locale === defaultLocale) {
+    return defaultMessages;
+  }
+  return messages[locale];
+};
+
+module.exports.getDefaultLocale = function() {
+  return defaultLocale;
+};
+
+module.exports.setDefaultLocale = function(locale) {
+  defaultLocale = locale;
+};
+
 module.exports.getLocale = function() {
   return globalLocale;
 };
@@ -28,17 +59,26 @@ module.exports.setLocale = function(locale) {
   globalLocale = locale;
 };
 
+module.exports.formatMessageById = function(id, values, opt_locale) {
+  var locale = opt_locale || globalLocale;
+  var message = defaultMessages[id];
+  if (locale !== defaultLocale) {
+    if (messages[locale] && messages[locale][id]) {
+      message = messages[locale][id];
+    } else if (process.env.NODE_ENV !== 'production') {
+      console.warn('Message with id `' + id + '` is not deifned for `' + locale + '` locale.');
+    }
+  }
+  if (!message && process.env.NODE_ENV !== 'production') {
+    console.warn('Message with id `' + id + '` is not exist.');
+    return '[undefined]';
+  }
+  return getMessageFormat(message, locale).format(values);
+};
+
 module.exports.formatMessage = function(message, values, opt_locale) {
   if (!message || !message.id) {
     throw new Error('Undefined message id: ' + message);
   }
-  if (!message.defaultMessage) {
-    throw new Error('Undefined defaultMessage id: ' + id);
-  }
-
-  var locale = opt_locale || globalLocale;
-  if (messages[locale] && messages[locale][message.id]) {
-    return getMessageFormat(messages[locale][message.id], locale).format(values);
-  }
-  return getMessageFormat(message.defaultMessage, locale).format(values);
+  return module.exports.formatMessageById(message.id, values, opt_locale);
 };
