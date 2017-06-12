@@ -28,15 +28,17 @@ module.exports.setLocale = function(locale) {
   globalLocale = locale;
 };
 
-module.exports.formatMessage = function(message, values) {
+module.exports.formatMessage = function(message, values, opt_locale) {
   if (!message || !message.id) {
     throw new Error('Undefined message id: ' + message);
   }
   if (!message.defaultMessage) {
     throw new Error('Undefined defaultMessage id: ' + id);
   }
-  if (messages[globalLocale] && messages[globalLocale][message.id]) {
-    return getMessageFormat(messages[globalLocale][message.id], globalLocale).format(values);
+
+  var locale = opt_locale || globalLocale;
+  if (messages[locale] && messages[locale][message.id]) {
+    return getMessageFormat(messages[locale][message.id], locale).format(values);
   }
-  return getMessageFormat(message.defaultMessage, globalLocale).format(values);
+  return getMessageFormat(message.defaultMessage, locale).format(values);
 };
