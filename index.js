@@ -59,9 +59,18 @@ module.exports.setLocale = function(locale) {
   globalLocale = locale;
 };
 
-module.exports.formatMessageById = function(id, values, opt_locale) {
+module.exports.formatMessage = function(obj, values, opt_locale) {
+  if (!obj || !obj.id) {
+    throw new Error('Undefined message id: ' + JSON.stringify(obj));
+  }
+  if (obj.defaultMessage === undefined) {
+    throw new Error('Default message is required: ' + JSON.stringify(obj));
+  }
+
+  var id = obj.id;
+  var message = obj.defaultMessage;
   var locale = opt_locale || globalLocale;
-  var message = defaultMessages[id];
+
   if (locale !== defaultLocale) {
     if (messages[locale] && messages[locale][id]) {
       message = messages[locale][id];
@@ -74,11 +83,4 @@ module.exports.formatMessageById = function(id, values, opt_locale) {
     return '[undefined]';
   }
   return getMessageFormat(message, locale).format(values);
-};
-
-module.exports.formatMessage = function(message, values, opt_locale) {
-  if (!message || !message.id) {
-    throw new Error('Undefined message id: ' + message);
-  }
-  return module.exports.formatMessageById(message.id, values, opt_locale);
 };
