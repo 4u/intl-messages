@@ -1,4 +1,5 @@
-var memoizeFormatConstructor = require('intl-format-cache');
+var intlFormatCache = require('intl-format-cache');
+var memoizeFormatConstructor = intlFormatCache.default || intlFormatCache;
 var MessageFormat = require('intl-messageformat');
 
 const getMessageFormat = memoizeFormatConstructor(MessageFormat);
